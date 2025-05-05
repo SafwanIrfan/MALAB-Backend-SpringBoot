@@ -1,5 +1,6 @@
 package com.playwithease.PlayWithEase.service;
 
+import com.playwithease.PlayWithEase.exceptions.UsernameAlreadyExistsException;
 import com.playwithease.PlayWithEase.model.BookedSlots;
 import com.playwithease.PlayWithEase.model.Users;
 import com.playwithease.PlayWithEase.repo.BookedSlotsRepo;
@@ -34,7 +35,18 @@ public class AuthService {
 
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
+//    public boolean checkUsernameExists(String username) {
+//       return usersRepo.existsByUsername(username);
+//    }
+
+    public boolean checkUsernameExists(String username) {
+        return usersRepo.existsByUsername(username);
+    }
+
     public Users register(Users users){
+        if(checkUsernameExists(users.getUsername())){
+            throw new UsernameAlreadyExistsException("Username already exist");
+        }
       users.setPassword(encoder.encode(users.getPassword()));
       return usersRepo.save((users));
     }
@@ -49,7 +61,8 @@ public class AuthService {
         return "Fail";
     }
 
-    public List<BookedSlots> getUserBookedSlots(Long usersId) {
-            return bookedSlotsRepo.findByUsersId(usersId);
+    public Users getUserByUsername(String username){
+        return usersRepo.findByUsername(username);
+
     }
 }

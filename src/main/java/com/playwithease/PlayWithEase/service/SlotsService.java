@@ -76,8 +76,10 @@ public class SlotsService {
             return bookedSlotsRepo.findByCourtIdAndDay(courtId,day);
         }
         return new ArrayList<>();
+    }
 
-
+    public List<BookedSlots> getUserBookedSlots(Long usersId) {
+        return bookedSlotsRepo.findByUsersId(usersId);
     }
 
 //    public BookedSlots getSlotsForDayAndDate(String day, Date date){

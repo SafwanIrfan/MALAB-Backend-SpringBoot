@@ -150,6 +150,11 @@ public class CourtsController {
         return new ResponseEntity<>(allBookedSlotsByDay, HttpStatus.OK);
     }
 
+    @GetMapping("/user/{usersId}/slots")
+    public ResponseEntity<List<BookedSlots>> getUserBookedSlots(@PathVariable Long usersId){
+        return new ResponseEntity<>(slotsService.getUserBookedSlots(usersId),HttpStatus.OK);
+    }
+
 //    @GetMapping("/slots/{day}/{date}")
 //    public ResponseEntity<BookedSlots> getSlotsForDayAndDate (@PathVariable String day, Date date){
 //        BookedSlots slotForDayAndDate = slotsService.getSlotsForDayAndDate(day,date);
