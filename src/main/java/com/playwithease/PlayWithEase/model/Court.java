@@ -14,6 +14,8 @@ public class Court {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true)
     private String name;
     private String description;
     private String location;
@@ -27,6 +29,9 @@ public class Court {
 
     @OneToMany(mappedBy = "court", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Timings> timings;
+
+    @OneToMany(mappedBy = "court", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CourtsFav> courtsFavorites;
 
 
     public Long getId() {
@@ -88,6 +93,15 @@ public class Court {
     public void setTimings(List<Timings> timings) {
         this.timings = timings;
     }
+
+    public List<CourtsFav> getCourtsFavorites() {
+        return courtsFavorites;
+    }
+
+    public void setCourtsFavorites(List<CourtsFav> courtsFavorites) {
+        this.courtsFavorites = courtsFavorites;
+    }
+
 
 
 }

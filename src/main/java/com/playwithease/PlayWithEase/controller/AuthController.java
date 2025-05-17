@@ -31,7 +31,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public Users user(@RequestBody Users users){
-        System.out.println(users.getUsername());
         return authService.register(users);
 
     }

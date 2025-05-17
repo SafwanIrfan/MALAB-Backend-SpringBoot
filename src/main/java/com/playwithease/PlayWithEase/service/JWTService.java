@@ -1,10 +1,13 @@
 package com.playwithease.PlayWithEase.service;
 
+import com.playwithease.PlayWithEase.model.Users;
+import com.playwithease.PlayWithEase.repo.UsersRepo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,9 @@ import java.util.function.Function;
 
 @Service
 public class  JWTService {
+
+    @Autowired
+    private UsersRepo usersRepo;
 
     private final SecretKey secretKey ;
 
@@ -45,9 +51,12 @@ public class  JWTService {
 
     public String generateToken(String username){
 
+        Users user = usersRepo.findByUsername(username);
+
         Map<String, Object> claims = new HashMap<>();
 
         return Jwts.builder()
+                .claim("usersId", user.getId())
                 .claims()
                 .add(claims)
                 .subject(username)

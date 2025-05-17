@@ -28,4 +28,5 @@ public interface CourtsRepo extends JpaRepository<Court, Long> {
             "OR LOWER(c.location) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<String> searchCourtsByWords(String keyword);
     void deleteCourtImageById(Long Id);
+    boolean existsByName(String name);
 }

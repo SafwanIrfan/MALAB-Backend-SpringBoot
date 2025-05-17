@@ -3,6 +3,8 @@ package com.playwithease.PlayWithEase.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 public class Users {
     @Id
@@ -12,6 +14,9 @@ public class Users {
     @Column(unique = true)
     private String username;
     private String password;
+
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CourtsFav> courtsFavorites;
 
     public Long getId() {
         return id;
@@ -32,5 +37,13 @@ public class Users {
     }
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<CourtsFav> getCourtsFavorites() {
+        return courtsFavorites;
+    }
+
+    public void setCourtsFavorites(List<CourtsFav> courtsFavorites) {
+        this.courtsFavorites = courtsFavorites;
     }
 }

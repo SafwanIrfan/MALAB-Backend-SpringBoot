@@ -2,6 +2,7 @@ package com.playwithease.PlayWithEase.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.playwithease.PlayWithEase.exceptions.UsernameAlreadyExistsException;
 import com.playwithease.PlayWithEase.model.Court;
 
 import com.playwithease.PlayWithEase.model.ImageUrls;
@@ -49,7 +50,11 @@ public class CourtsService {
     }
 
     public Court addCourt(Court court){
+        if(repo.existsByName(court.getName())) {
+            throw new UsernameAlreadyExistsException("Court name already exist");
+        }
         return repo.save(court);
+
     }
 
     public List<String> addCourtImages(Long courtId, MultipartFile[] files) throws IOException {
@@ -107,8 +112,8 @@ public class CourtsService {
     public void deleteImageFromCloudinary(String imageUrl){
         try{
             // Extract public ID from URL
-            String publicId = extractPublicIdFromUrl(imageUrl);
-            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+                String publicId = extractPublicIdFromUrl(imageUrl);
+                cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
         } catch (IOException e) {
             throw new RuntimeException("Error deleting image from Cloudinary", e);
         }
@@ -150,6 +155,10 @@ public class CourtsService {
 
 
     public void deleteCourt(Long id){
+        Court court = getCourtById(id);
+        for(ImageUrls imageUrl : court.getImageUrls()  ){
+            deleteImageFromCloudinary(imageUrl.getUrl());
+        }
         repo.deleteById(id);
     }
 
