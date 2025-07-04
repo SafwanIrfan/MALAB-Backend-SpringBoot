@@ -33,10 +33,11 @@ public class FavoriteController {
         }
     }
 
-    @GetMapping("user/{usersId}/getfav")
+    @GetMapping("user/{usersId}/fav")
     public ResponseEntity<List<CourtsFav>> getFavoriteByUsersId(@PathVariable Long usersId){
         return new ResponseEntity<>(favService.getFavoriteByUsersId(usersId),HttpStatus.OK);
     }
+
 
 
 }

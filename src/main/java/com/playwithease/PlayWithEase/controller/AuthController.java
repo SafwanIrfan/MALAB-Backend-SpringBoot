@@ -1,6 +1,7 @@
 package com.playwithease.PlayWithEase.controller;
 
 import com.playwithease.PlayWithEase.config.JwtFilter;
+import com.playwithease.PlayWithEase.dtos.UsersDTO;
 import com.playwithease.PlayWithEase.model.Users;
 import com.playwithease.PlayWithEase.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,9 +31,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public Users user(@RequestBody Users users){
-        return authService.register(users);
-
+    public void user(@RequestBody Users users){
+        authService.register(users);
     }
 
     @PostMapping("/login")
@@ -47,9 +47,16 @@ public class AuthController {
     }
 
     @GetMapping("/user/{username}")
-    public ResponseEntity<Users> getUserByUsername (@PathVariable String username) {
-        Users user = authService.getUserByUsername(username);
+    public ResponseEntity<UsersDTO> getUserByUsername (@PathVariable String username) {
+        System.out.println(username);
+        UsersDTO user = authService.getUserByUsername(username);
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("/api/verify/user")
+    public ResponseEntity<String> verifyUserEmail(@RequestParam("token") String token){
+        String verify = authService.verifyUserEmail(token);
+        return new ResponseEntity<>(verify,HttpStatus.OK);
     }
 
 

@@ -2,28 +2,23 @@ package com.playwithease.PlayWithEase.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.playwithease.PlayWithEase.exceptions.UsernameAlreadyExistsException;
 import com.playwithease.PlayWithEase.model.Court;
 
 import com.playwithease.PlayWithEase.model.ImageUrls;
-import com.playwithease.PlayWithEase.model.SlotDays;
 import com.playwithease.PlayWithEase.model.Timings;
 import com.playwithease.PlayWithEase.repo.CourtTimingsRepo;
 import com.playwithease.PlayWithEase.repo.CourtsRepo;
 import com.playwithease.PlayWithEase.repo.ImageUrlsRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class CourtsService {
@@ -51,7 +46,7 @@ public class CourtsService {
 
     public Court addCourt(Court court){
         if(repo.existsByName(court.getName())) {
-            throw new UsernameAlreadyExistsException("Court name already exist");
+            throw new DataIntegrityViolationException("Court name already exist");
         }
         return repo.save(court);
 
