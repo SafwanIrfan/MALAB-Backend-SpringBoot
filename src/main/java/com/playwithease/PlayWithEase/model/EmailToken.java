@@ -12,8 +12,10 @@ public class EmailToken {
 
     private String token;
 
-    @OneToOne
+    @ManyToOne
     private Users users;
+
+    private String purpose;
 
     private LocalDateTime expiryDate;
 
@@ -40,6 +42,14 @@ public class EmailToken {
 
     public void setUsers(Users users) {
         this.users = users;
+    }
+
+    public String getPurpose() {
+        return purpose;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
     }
 
     public LocalDateTime getExpiryDate() {

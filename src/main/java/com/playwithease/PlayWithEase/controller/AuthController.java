@@ -1,6 +1,7 @@
 package com.playwithease.PlayWithEase.controller;
 
 import com.playwithease.PlayWithEase.config.JwtFilter;
+import com.playwithease.PlayWithEase.dtos.ResetPasswordDTO;
 import com.playwithease.PlayWithEase.dtos.UsersDTO;
 import com.playwithease.PlayWithEase.model.Users;
 import com.playwithease.PlayWithEase.service.AuthService;
@@ -11,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -33,6 +37,18 @@ public class AuthController {
     @PostMapping("/register")
     public void user(@RequestBody Users users){
         authService.register(users);
+    }
+
+    @PostMapping("/forget-pass/send-email")
+    public ResponseEntity<UsersDTO> verifyUserForNewPassword (@RequestBody Map<String,String> body){
+        UsersDTO result = authService.verifyUserForNewPassword(body.get("email"));
+        return new ResponseEntity<>(result , HttpStatus.OK);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDTO request) {
+        String result = authService.resetPassword(request.getUsername(), request.getNewPassword());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PostMapping("/login")

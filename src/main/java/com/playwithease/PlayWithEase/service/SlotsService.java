@@ -55,7 +55,9 @@ public class SlotsService {
        Users user = usersRepo.findByUsername(username);
        if(court != null && user != null){
            slot.setCourt(court);
+           slot.setCourtName(court.getName());
            slot.setUsers(user);
+           slot.setTotalBookings(slot.getTotalBookings() + 1);
            return bookedSlotsRepo.save(slot);
        }
        return new BookedSlots();

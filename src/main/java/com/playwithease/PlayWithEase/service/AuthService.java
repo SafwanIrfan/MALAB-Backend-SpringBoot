@@ -20,6 +20,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -58,11 +60,32 @@ public class AuthService {
         return usersRepo.existsByUsername(username);
     }
 
+
+    public String resetPassword (String username, String newPassword){
+        Users users = usersRepo.findByUsername(username);
+        users.setPassword(encoder.encode(newPassword));
+        users.setCanChangePassword(false);
+        usersRepo.save(users);
+
+        return ("Password Updated Successfully!");
+    }
+
+    public UsersDTO verifyUserForNewPassword(String email){
+        Users user = usersRepo.findByEmail(email);
+        System.out.println(user);
+        if (user == null) return null;
+
+        System.out.println("USER FOUND");
+        sendEmail(user, "newPassword");
+        return fromEntityToDTO(user);
+
+    }
+
     public void register(Users users){
      try {
-      users.setPassword(encoder.encode(users.getPassword()));
+         users.setPassword(encoder.encode(users.getPassword()));
       usersRepo.save((users));
-      sendEmail(users);
+      sendEmail(users, "register");
      } catch (DataIntegrityViolationException e){
          throw e; //handled by GlobalExceptionHandler
      } catch (ConstraintViolationException e){
@@ -70,11 +93,12 @@ public class AuthService {
      }
     }
 
-    public String sendEmail(Users users){
+    public String sendEmail(Users users, String purpose){
         String token = UUID.randomUUID().toString();
         EmailToken emailToken = new EmailToken();
         emailToken.setToken(token);
         emailToken.setUsers(users);
+        emailToken.setPurpose(purpose);
         emailToken.setExpiryDate(LocalDateTime.now().plusHours(1));
 
         emailTokenRepo.save(emailToken);
@@ -101,7 +125,7 @@ public class AuthService {
         if(authentication.isAuthenticated())
             return jwtService.generateToken(users.getUsername()) ;
 
-        return "Fail";
+        return "Invalid credentials.";
     }
 
     public UsersDTO getUserByUsername(String username){
@@ -111,24 +135,39 @@ public class AuthService {
 
     public UsersDTO fromEntityToDTO(Users user){
         if(user == null) return null;
-        return new UsersDTO(user.getId(),user.getUsername(),user.getIsVerified());
+        return new UsersDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getIsVerified(),
+                user.getCanChangePassword()
+        );
     }
 
     public String verifyUserEmail(String token){
-        EmailToken vt = emailTokenRepo.findByToken(token);
-        if(vt == null){
+        EmailToken verificationToken = emailTokenRepo.findByToken(token);
+        if(verificationToken == null){
             return "Invalid token";
         }
 
-        if(vt.getExpiryDate().isBefore(LocalDateTime.now())){
-            return "Oh! This link is expired. Create an account and click the link before it expires.";
+        if(verificationToken.getExpiryDate().isBefore(LocalDateTime.now())){
+            emailTokenRepo.delete(verificationToken);
+            return "Oh! This link is expired.";
         }
 
-        Users users = vt.getUsers();
-        users.setIsVerified(true);
-        usersRepo.save(users);
-        emailTokenRepo.delete(vt);
+        Users users = verificationToken.getUsers();
 
-        return "Your account has been verified! Now you can login.";
+        if(Objects.equals(verificationToken.getPurpose(), "register")) {
+            users.setIsVerified(true);
+            usersRepo.save(users);
+            emailTokenRepo.delete(verificationToken);
+            return "Your account has been verified! Now you can login.";
+        }
+       else {
+            users.setCanChangePassword(true);
+            usersRepo.save(users);
+            emailTokenRepo.delete(verificationToken);
+            System.out.println("DELETED TOKEN!");
+            return "Successfully Verified. Now you can change your password.";
+        }
     }
 }

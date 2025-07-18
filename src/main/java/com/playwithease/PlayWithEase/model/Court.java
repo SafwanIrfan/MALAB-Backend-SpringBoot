@@ -20,6 +20,8 @@ public class Court {
     private String description;
     private String location;
     private BigDecimal pricePerHour;
+//    private double latitude;
+//    private double longitude;
 
     @OneToMany(mappedBy = "court", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ImageUrls> imageUrls;

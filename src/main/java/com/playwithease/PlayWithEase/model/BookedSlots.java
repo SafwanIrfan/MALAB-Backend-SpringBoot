@@ -24,6 +24,7 @@ public class BookedSlots {
     @JsonIgnore
     private Users users;
 
+    private String courtName;
     private String day;
     private LocalDate date;
     private LocalTime startTime;
@@ -31,6 +32,8 @@ public class BookedSlots {
     private LocalTime bookedTime;
     private LocalDate bookedDate;
     private String bookedDay;
+
+    private Long totalBookings;
 
     private String status;
 
@@ -55,6 +58,13 @@ public class BookedSlots {
     }
     public void setUsers(Users users){
         this.users = users;
+    }
+
+    public String getCourtName() {
+        return courtName;
+    }
+    public void setCourtName(String courtName) {
+        this.courtName = courtName;
     }
 
     public LocalDate getDate() {
@@ -95,6 +105,14 @@ public class BookedSlots {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getTotalBookings() {
+        return totalBookings;
+    }
+
+    public void setTotalBookings(Long totalBookings) {
+        this.totalBookings = totalBookings;
     }
 
     public LocalTime getBookedTime() {

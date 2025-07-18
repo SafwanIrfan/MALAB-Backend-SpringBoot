@@ -88,7 +88,7 @@ public class CourtsController {
             return new ResponseEntity<>("Deleted", HttpStatus.OK);
     }
 
-    @GetMapping("courts/search")
+    @GetMapping("/search/court")
     public ResponseEntity<List<Court>> searchCourts(@RequestParam String keyword){
         System.out.println("Searching : "+ keyword);
         List<Court> courts = service.searchCourts(keyword);

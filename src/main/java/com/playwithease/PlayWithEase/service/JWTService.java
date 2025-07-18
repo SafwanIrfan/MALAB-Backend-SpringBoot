@@ -57,6 +57,7 @@ public class  JWTService {
 
         return Jwts.builder()
                 .claim("usersId", user.getId())
+                .claim("isVerified", user.getIsVerified())
                 .claims()
                 .add(claims)
                 .subject(username)

@@ -25,15 +25,28 @@ public class Users {
 
     private String password;
 
+    //"^(0\\d{10}|\\+92\\d{10})$"
+
     @Column(unique = true)
-    @Pattern(regexp = "^(0\\d{10}|\\+92\\d{10})$", message = "Invalid Phone Number") //Regex : two backslash in JAVA and one blackslash in JS
-    @Size(min = 11, max = 13)
+    @Pattern(regexp = "^0\\d{10}$", message = "Invalid Phone Number") //Regex : two backslash in JAVA and one blackslash in JS
+    @Size(min = 11)
     private String phoneNo;
 
     @Column(unique = true)
     private String email;
 
     private boolean isVerified;
+
+    private boolean canChangePassword;
+
+
+    public boolean getCanChangePassword() {
+        return canChangePassword;
+    }
+
+    public void setCanChangePassword(boolean canChangePassword) {
+        this.canChangePassword = canChangePassword;
+    }
 
     @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CourtsFav> courtsFavorites;
