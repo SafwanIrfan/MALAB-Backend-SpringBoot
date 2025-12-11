@@ -4,13 +4,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
-public class ImageUrls {
+public class CourtImageUrls {
 
-    public ImageUrls(){}
+    public CourtImageUrls(){}
 
-    public ImageUrls(String url) {
+    public CourtImageUrls(String url) {
         this.url = url;
     }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String url;
+
+    @ManyToOne
+    @JoinColumn(name = "court_id", nullable = false)
+    @JsonIgnore
+    private Court court;
 
     public Long getId() {
         return id;
@@ -36,13 +46,4 @@ public class ImageUrls {
         this.court = court;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String url;
-
-    @ManyToOne
-    @JoinColumn(name = "court_id", nullable = false)
-    @JsonIgnore
-    private Court court;
 }

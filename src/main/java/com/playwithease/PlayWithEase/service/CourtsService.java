@@ -4,11 +4,14 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.playwithease.PlayWithEase.model.Court;
 
-import com.playwithease.PlayWithEase.model.ImageUrls;
+import com.playwithease.PlayWithEase.model.CourtImageUrls;
+import com.playwithease.PlayWithEase.model.Enums.CourtStatus;
 import com.playwithease.PlayWithEase.model.Timings;
+import com.playwithease.PlayWithEase.model.Users;
 import com.playwithease.PlayWithEase.repo.CourtTimingsRepo;
 import com.playwithease.PlayWithEase.repo.CourtsRepo;
-import com.playwithease.PlayWithEase.repo.ImageUrlsRepo;
+import com.playwithease.PlayWithEase.repo.CourtImageUrlsRepo;
+import com.playwithease.PlayWithEase.repo.UsersRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -19,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CourtsService {
@@ -27,10 +31,13 @@ public class CourtsService {
     CourtsRepo repo;
 
     @Autowired
+    UsersRepo usersRepo;
+
+    @Autowired
     CourtTimingsRepo courtTimingsRepo;
 
     @Autowired
-    ImageUrlsRepo imageUrlsRepo;
+    CourtImageUrlsRepo courtImageUrlsRepo;
 
     @Autowired
     Cloudinary cloudinary;
@@ -44,15 +51,38 @@ public class CourtsService {
                 .orElseThrow(() -> new RuntimeException("Court not found with ID : " + id));
     }
 
-    public Court addCourt(Court court){
-        if(repo.existsByName(court.getName())) {
+    public List<Court> getCourtsByStatus(CourtStatus courtStatus){
+        return repo.findByCourtStatus(courtStatus)
+                .orElseThrow(() -> new RuntimeException("Courts not found with status : "+ courtStatus));
+    }
+
+    public List<Court> getCourtByOwnerId (Long ownerId){
+        return repo.findByOwnerId(ownerId)
+                .orElseThrow(() -> new RuntimeException("Court not found with ownerId : " + ownerId));
+    }
+
+    public Court addCourt(String username, Court court){
+        Users user = usersRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found to fetch his court."));
+        if(repo.existsByCourtName(court.getCourtName())) {
             throw new DataIntegrityViolationException("Court name already exist");
         }
+        court.setCourtStatus(CourtStatus.NOT_APPROVED);
+        court.setOwner(user);
         return repo.save(court);
 
     }
 
-    public List<String> addCourtImages(Long courtId, MultipartFile[] files) throws IOException {
+    public String approveCourt(Long courtId, boolean isApproved) {
+        Court court = repo.findById(courtId)
+                .orElseThrow(() -> new RuntimeException("Court not found."));
+
+        court.setCourtStatus(CourtStatus.APPROVED);
+        repo.save(court);
+        return "Court has been approved successfully.";
+    }
+
+    public String addCourtImages(Long courtId, MultipartFile[] courtFiles) throws IOException {
         try {
             Court court = getCourtById(courtId);
             if (court == null) {
@@ -61,31 +91,39 @@ public class CourtsService {
 
             List<String> uploadedUrls = new ArrayList<>();
 
-            for (MultipartFile file : files) {
-                Map uploadImage = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-                String imageUrl = uploadImage.get("secure_url").toString();
-                ImageUrls url = new ImageUrls(imageUrl);
-                url.setCourt(court);
-                court.getImageUrls().add(url);
-                uploadedUrls.add(imageUrl);
+            for (MultipartFile file : courtFiles) {
+                Map uploadCourtImage = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+                String courtImageUrl = uploadCourtImage.get("secure_url").toString();
+                CourtImageUrls courtUrl = new CourtImageUrls(courtImageUrl);
+                courtUrl.setCourt(court);
+                court.getCourtImageUrls().add(courtUrl);
+                uploadedUrls.add(courtImageUrl);
             }
 
+//            Map uploadOwnerImage = cloudinary.uploader().upload(ownerFile.getBytes(), ObjectUtils.emptyMap());
+//            String ownerImageUrl = uploadOwnerImage.get("secure_url").toString();
+//            UserImageUrl ownerUrl = new UserImageUrl(ownerImageUrl);
+//            ownerUrl.setCourt(court);
+//            court.setOwnerImageUrl(ownerUrl);
+
             repo.save(court);
-            return uploadedUrls;
+            //why not saving courtUrls? because CascadeType.All automatically saved and
+            //do other operations of its child.
+            return "Court Images saved.";
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to upload image", e);
+            throw new RuntimeException("Failed to save court images.", e);
         }
     }
 
-    public List<ImageUrls> getAllImages() {
-        return imageUrlsRepo.findAll();
+    public List<CourtImageUrls> getAllImages() {
+        return courtImageUrlsRepo.findAll();
     }
 
-    public List<ImageUrls> getCourtImages(Long courtId){
+    public List<CourtImageUrls> getCourtImages(Long courtId){
         Court court = getCourtById(courtId);
         if(court != null){
-            return imageUrlsRepo.findByCourtId(courtId);
+            return courtImageUrlsRepo.findByCourtId(courtId);
         }
         return null;
     }
@@ -93,14 +131,14 @@ public class CourtsService {
     public void deleteCourtImage(Long courtId, Long imageId) {
         Court court = getCourtById(courtId);
         if(court != null) {
-            ImageUrls image = imageUrlsRepo.findById(imageId)
+            CourtImageUrls image = courtImageUrlsRepo.findById(imageId)
                     .orElseThrow(()-> new RuntimeException("Image not found."));
 
             deleteImageFromCloudinary(image.getUrl());
 
-            court.getImageUrls().removeIf(img -> img.getId().equals(imageId));
+            court.getCourtImageUrls().removeIf(img -> img.getId().equals(imageId));
 
-            imageUrlsRepo.deleteById(imageId);
+            courtImageUrlsRepo.deleteById(imageId);
         }
     }
 
@@ -126,20 +164,21 @@ public class CourtsService {
     public Court editCourt(Long id, Court updatedCourt) {
         Court newCourt = getCourtById(id);
 
-        newCourt.setName(updatedCourt.getName());
+        newCourt.setCourtName(updatedCourt.getCourtName());
         newCourt.setDescription(updatedCourt.getDescription());
-        newCourt.setLocation(updatedCourt.getLocation());
+        newCourt.setCity(updatedCourt.getCity());
+        newCourt.setArea(updatedCourt.getArea());
         newCourt.setPricePerHour(updatedCourt.getPricePerHour());
 
-        List<ImageUrls> existingImages = newCourt.getImageUrls();
-        for (ImageUrls img : existingImages) {
+        List<CourtImageUrls> existingImages = newCourt.getCourtImageUrls();
+        for (CourtImageUrls img : existingImages) {
             img.setCourt(null);
         }
         existingImages.clear();
 
         // 🔐 Only update image URLs if the user actually sent new ones
-        if (updatedCourt.getImageUrls() != null && !updatedCourt.getImageUrls().isEmpty()) {
-            for (ImageUrls imageUrl : updatedCourt.getImageUrls()) {
+        if (updatedCourt.getCourtImageUrls() != null && !updatedCourt.getCourtImageUrls().isEmpty()) {
+            for (CourtImageUrls imageUrl : updatedCourt.getCourtImageUrls()) {
                 imageUrl.setCourt(newCourt); // ensure relationship is intact
                 existingImages.add(imageUrl);
             }
@@ -148,10 +187,11 @@ public class CourtsService {
         return repo.save(newCourt);
     }
 
+//    deleteImageFromCloudinary(court.getOwnerImageUrl().getUrl());
 
     public void deleteCourt(Long id){
         Court court = getCourtById(id);
-        for(ImageUrls imageUrl : court.getImageUrls()  ){
+        for(CourtImageUrls imageUrl : court.getCourtImageUrls() ){
             deleteImageFromCloudinary(imageUrl.getUrl());
         }
         repo.deleteById(id);
@@ -182,7 +222,5 @@ public class CourtsService {
     public List<String> searchCourtsByWords(String keyword) {
         return repo.searchCourtsByWords(keyword);
     }
-
-
 
 }

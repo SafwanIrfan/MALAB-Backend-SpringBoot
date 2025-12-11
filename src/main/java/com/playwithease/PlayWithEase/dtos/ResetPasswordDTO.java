@@ -1,16 +1,16 @@
 package com.playwithease.PlayWithEase.dtos;
 
 public class ResetPasswordDTO {
-    private String username;
+    private String phoneNo;
     private String newPassword;
 
 
-    public String getUsername() {
-        return username;
+    public String getPhoneNo() {
+        return phoneNo;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setPhoneNo(String username) {
+        this.phoneNo = username;
     }
 
     public String getNewPassword() {

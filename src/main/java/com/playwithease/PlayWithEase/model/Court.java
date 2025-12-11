@@ -1,11 +1,12 @@
 package com.playwithease.PlayWithEase.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.playwithease.PlayWithEase.model.Enums.CourtStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 
 
 import java.math.BigDecimal;
-import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -16,15 +17,24 @@ public class Court {
     private Long id;
 
     @Column(unique = true)
-    private String name;
+    private String courtName;
     private String description;
-    private String location;
+    private String city;
+    private String area;
     private BigDecimal pricePerHour;
-//    private double latitude;
-//    private double longitude;
+    private Long totalBookings = 0L;
+    private Double moneyEarned = 0.0;
+
+    @Enumerated(EnumType.STRING) // saves actual value instead of index
+    private CourtStatus courtStatus;
+
+    @JsonIgnore // To remove large json lines
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private Users owner;
 
     @OneToMany(mappedBy = "court", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ImageUrls> imageUrls;
+    private List<CourtImageUrls> courtImageUrls;
 
     @OneToMany(mappedBy = "court", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookedSlots> bookedSlots;
@@ -44,11 +54,11 @@ public class Court {
         this.id = id;
     }
 
-    public String getName(){
-        return name;
+    public String getCourtName(){
+        return courtName;
     }
-    public void setName(String name){
-        this.name = name;
+    public void setCourtName(String courtName){
+        this.courtName = courtName;
     }
 
     public String getDescription() {
@@ -59,11 +69,26 @@ public class Court {
         this.description = description;
     }
 
-    public String getLocation(){
-        return location;
+    public String getCity() {
+        return city;
     }
-    public void setLocation(String location){
-        this.location = location;
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getArea() {
+        return area;
+    }
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    public Long getTotalBookings() {
+        return totalBookings;
+    }
+
+    public void setTotalBookings(Long totalBookings) {
+        this.totalBookings = totalBookings;
     }
 
     public BigDecimal getPricePerHour() {
@@ -72,13 +97,6 @@ public class Court {
 
     public void setPricePerHour(BigDecimal pricePerHour) {
         this.pricePerHour = pricePerHour;
-    }
-
-    public List<ImageUrls> getImageUrls(){
-        return imageUrls;
-    }
-    public void setImageUrls(List<ImageUrls> imageUrls){
-        this.imageUrls = imageUrls;
     }
 
     public List<BookedSlots> getBookedSlots() {
@@ -99,12 +117,39 @@ public class Court {
     public List<CourtsFav> getCourtsFavorites() {
         return courtsFavorites;
     }
-
     public void setCourtsFavorites(List<CourtsFav> courtsFavorites) {
         this.courtsFavorites = courtsFavorites;
     }
 
+    public List<CourtImageUrls> getCourtImageUrls() {
+        return courtImageUrls;
+    }
 
+    public void setCourtImageUrls(List<CourtImageUrls> courtImageUrls) {
+        this.courtImageUrls = courtImageUrls;
+    }
+
+
+    public Users getOwner() {
+        return owner;
+    }
+    public void setOwner(Users owner) {
+        this.owner = owner;
+    }
+
+    public CourtStatus getCourtStatus() {
+        return courtStatus;
+    }
+    public void setCourtStatus(CourtStatus courtStatus) {
+        this.courtStatus = courtStatus;
+    }
+
+    public Double getMoneyEarned(){
+        return moneyEarned;
+    }
+    public void setMoneyEarned(Double moneyEarned){
+        this.moneyEarned = moneyEarned;
+    }
 
 }
 

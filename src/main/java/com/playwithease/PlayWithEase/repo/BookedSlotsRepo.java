@@ -12,4 +12,5 @@ public interface BookedSlotsRepo extends JpaRepository<BookedSlots, Long> {
     List<BookedSlots> findByCourtId(Long courtId);
     List<BookedSlots> findByUsersId(Long usersId);
     List<BookedSlots> findByCourtIdAndDay(Long courtId,String day);
+    List<BookedSlots> findByCourtName(String courtName);
 }

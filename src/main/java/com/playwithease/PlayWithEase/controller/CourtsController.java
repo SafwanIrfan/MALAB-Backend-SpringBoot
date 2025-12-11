@@ -1,6 +1,7 @@
 package com.playwithease.PlayWithEase.controller;
 import com.cloudinary.Cloudinary;
 import com.playwithease.PlayWithEase.model.*;
+import com.playwithease.PlayWithEase.model.Enums.CourtStatus;
 import com.playwithease.PlayWithEase.service.CourtsService;
 
 import com.playwithease.PlayWithEase.service.SlotsService;
@@ -11,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalTime;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -37,19 +36,25 @@ public class CourtsController {
         return new ResponseEntity<>(service.getAllCourts(), HttpStatus.OK);
     }
 
-    @PostMapping("/court/add")
-    public ResponseEntity<Court> addCourt(@RequestBody Court court) {
-        Court savedCourt = service.addCourt(court);
+    @PostMapping("/owner/{username}/court/add")
+    public ResponseEntity<Court> addCourt(@PathVariable String username,@RequestBody Court court) {
+        Court savedCourt = service.addCourt(username, court);
         return new ResponseEntity<>(savedCourt, HttpStatus.OK);
     }
 
-    @PostMapping("/court/{courtId}/addImage")
-    public ResponseEntity<String> addCourtImages(@PathVariable Long courtId,@RequestParam("files") MultipartFile[] files) throws IOException {
-        List<String> imageUrl = service.addCourtImages(courtId, files);
-        return new ResponseEntity<>("Image added", HttpStatus.OK);
+    @PostMapping("/admin/approve_court/{courtId}")
+    public ResponseEntity<String> approveCourt(@PathVariable Long courtId, @RequestBody boolean isApproved){
+        String court = service.approveCourt(courtId, isApproved);
+        return new ResponseEntity<>("Court Approved Successfully.", HttpStatus.OK);
     }
 
-    @DeleteMapping("/court/{courtId}/image/{imageId}")
+    @PostMapping("/owner/court/{courtId}/addImage")
+    public ResponseEntity<String> addCourtImages(@PathVariable Long courtId,@RequestParam("courtFiles") MultipartFile[] courtFiles ) throws IOException {
+        String imageUrl = service.addCourtImages(courtId, courtFiles);
+        return new ResponseEntity<>(imageUrl, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/owner/court/{courtId}/image/{imageId}")
     public ResponseEntity<String> deleteCourtImage(@PathVariable Long courtId, @PathVariable Long imageId){
         service.deleteCourtImage(courtId, imageId);
         return new ResponseEntity<>("Image Deleted Successfully", HttpStatus.OK);
@@ -60,19 +65,31 @@ public class CourtsController {
         return new ResponseEntity<>(service.getCourtById(id),HttpStatus.OK);
     }
 
+    @GetMapping("/user/courts/{courtStatus}")
+    public ResponseEntity<List<Court>> getCourtByStatus(@PathVariable CourtStatus courtStatus){
+        List<Court> status = service.getCourtsByStatus(courtStatus);
+        return new ResponseEntity<>(status, HttpStatus.OK);
+    }
+
+    @GetMapping("/owner/{ownerId}/court")
+    public ResponseEntity<List<Court>> getCourtByUsersId(@PathVariable Long ownerId){
+        List<Court> usersCourt = service.getCourtByOwnerId(ownerId);
+        return new ResponseEntity<>(usersCourt, HttpStatus.OK);
+    }
+
     @GetMapping("/courts/images")
-    public ResponseEntity<List<ImageUrls>> getAllImages(){
-        List<ImageUrls> images = service.getAllImages();
+    public ResponseEntity<List<CourtImageUrls>> getAllImages(){
+        List<CourtImageUrls> images = service.getAllImages();
         return ResponseEntity.ok(images);
     }
 
     @GetMapping("/court/{courtId}/images")
-    public ResponseEntity<List<ImageUrls>> getCourtImages(@PathVariable Long courtId){
-        List<ImageUrls> images = service.getCourtImages(courtId);
+    public ResponseEntity<List<CourtImageUrls>> getCourtImages(@PathVariable Long courtId){
+        List<CourtImageUrls> images = service.getCourtImages(courtId);
         return ResponseEntity.ok(images);
     }
 
-    @PutMapping("court/{id}/edit")
+    @PutMapping("/owner/court/{id}/edit")
     public ResponseEntity<String> editCourt(@PathVariable Long id, @RequestBody Court updatedCourt){
         Court newCourt = service.editCourt(id,updatedCourt);
         if(newCourt != null){
@@ -82,13 +99,13 @@ public class CourtsController {
         }
     }
 
-    @DeleteMapping("court/{id}/delete")
+    @DeleteMapping("/owner/court/{id}/delete")
     public ResponseEntity<String> deleteCourt(@PathVariable Long id){
             service.deleteCourt(id);
             return new ResponseEntity<>("Deleted", HttpStatus.OK);
     }
 
-    @GetMapping("/search/court")
+    @GetMapping("/user/search/court")
     public ResponseEntity<List<Court>> searchCourts(@RequestParam String keyword){
         System.out.println("Searching : "+ keyword);
         List<Court> courts = service.searchCourts(keyword);
@@ -109,7 +126,7 @@ public class CourtsController {
 //    }
 
 
-    @PostMapping("court/{courtId}/add_timings")
+    @PostMapping("/owner/court/{courtId}/add_timings")
     public ResponseEntity<List<Timings>> addCourtTimings(
             @PathVariable Long courtId,
             @RequestBody List<Timings> timings
@@ -153,6 +170,11 @@ public class CourtsController {
     @GetMapping("/user/{usersId}/slots")
     public ResponseEntity<List<BookedSlots>> getUserBookedSlots(@PathVariable Long usersId){
         return new ResponseEntity<>(slotsService.getUserBookedSlots(usersId),HttpStatus.OK);
+    }
+
+    @GetMapping("/owner/court/bookings")
+    public ResponseEntity<List<BookedSlots>> getCourtBookedSlots(@RequestBody String courtName) {
+        return new ResponseEntity<>(slotsService.getCourtBookedSlots(courtName), HttpStatus.OK);
     }
 
 //    @GetMapping("/slots/{day}/{date}")

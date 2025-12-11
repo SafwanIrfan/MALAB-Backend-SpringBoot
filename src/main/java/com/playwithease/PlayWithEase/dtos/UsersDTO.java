@@ -1,16 +1,30 @@
 package com.playwithease.PlayWithEase.dtos;
 
+import com.playwithease.PlayWithEase.model.Enums.RoleNames;
+
 public class UsersDTO {
     private Long id;
+    private String fullName;
     private String username;
     private boolean isVerified;
     private boolean canChangePassword;
+    private RoleNames role;
 
-    public UsersDTO(Long id, String username, boolean isVerified, boolean canChangePassword){
-        this.id = id;
+    public UsersDTO(
+            Long id,
+            String fullName,
+            String username,
+            boolean isVerified,
+            boolean canChangePassword,
+            RoleNames role
+    )
+    {
         this.username = username;
+        this.id = id;
+        this.fullName = fullName;
         this.isVerified = isVerified;
         this.canChangePassword = canChangePassword;
+        this.role = role;
     }
 
     public Long getId() {
@@ -41,5 +55,21 @@ public class UsersDTO {
 
     public void setCanChangePassword(boolean canChangePassword) {
         this.canChangePassword = canChangePassword;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public RoleNames getRole() {
+        return role;
+    }
+
+    public void setRole(RoleNames role) {
+        this.role = role;
     }
 }

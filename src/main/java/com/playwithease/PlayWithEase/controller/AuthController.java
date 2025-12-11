@@ -12,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,8 +37,14 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public void user(@RequestBody Users users){
+    public void addUser(@RequestBody Users users){
         authService.register(users);
+    }
+
+    @PostMapping("/add_image")
+    public ResponseEntity<String> addUserImage(@RequestParam("username") String username, @RequestParam("userFile") MultipartFile file) throws IOException {
+        String imageUrl = authService.addUserImage(username, file);
+        return new ResponseEntity<>(imageUrl, HttpStatus.OK);
     }
 
     @PostMapping("/forget-pass/send-email")
@@ -47,7 +55,7 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDTO request) {
-        String result = authService.resetPassword(request.getUsername(), request.getNewPassword());
+        String result = authService.resetPassword(request.getPhoneNo(), request.getNewPassword());
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -71,6 +79,7 @@ public class AuthController {
 
     @GetMapping("/api/verify/user")
     public ResponseEntity<String> verifyUserEmail(@RequestParam("token") String token){
+        System.out.println(token);
         String verify = authService.verifyUserEmail(token);
         return new ResponseEntity<>(verify,HttpStatus.OK);
     }

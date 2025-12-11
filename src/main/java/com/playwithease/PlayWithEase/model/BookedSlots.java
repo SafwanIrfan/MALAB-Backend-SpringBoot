@@ -32,10 +32,8 @@ public class BookedSlots {
     private LocalTime bookedTime;
     private LocalDate bookedDate;
     private String bookedDay;
-
-    private Long totalBookings;
-
     private String status;
+    private Long amount = 0L;
 
     public Long getId() {
         return id;
@@ -107,14 +105,6 @@ public class BookedSlots {
         this.status = status;
     }
 
-    public Long getTotalBookings() {
-        return totalBookings;
-    }
-
-    public void setTotalBookings(Long totalBookings) {
-        this.totalBookings = totalBookings;
-    }
-
     public LocalTime getBookedTime() {
         return bookedTime;
     }
@@ -135,9 +125,14 @@ public class BookedSlots {
     }
     public void setBookedDay(String bookedDay){
         this.bookedDay = bookedDay;
-    }   
+    }
 
-
+    public Long getAmount() {
+        return amount;
+    }
+    public void setAmount(Long amount) {
+        this.amount = amount;
+    }
 }
 
 

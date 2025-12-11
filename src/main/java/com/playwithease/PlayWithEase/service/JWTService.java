@@ -51,18 +51,22 @@ public class  JWTService {
 
     public String generateToken(String username){
 
-        Users user = usersRepo.findByUsername(username);
+        Users user = usersRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found in generating the token."));
 
         Map<String, Object> claims = new HashMap<>();
 
         return Jwts.builder()
                 .claim("usersId", user.getId())
                 .claim("isVerified", user.getIsVerified())
+                .claim("userImageUrl",
+                        user.getUserImageUrl() != null ? user.getUserImageUrl().getUrl() : "")
+                .claim("role", user.getRole().name()) // .name() for getting string.
                 .claims()
                 .add(claims)
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 30) ))
+                .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 1440) ))
                 .and()
                 .signWith(getKey())
                 .compact();

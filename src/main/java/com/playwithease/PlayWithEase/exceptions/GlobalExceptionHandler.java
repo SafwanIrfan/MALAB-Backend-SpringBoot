@@ -1,5 +1,6 @@
 package com.playwithease.PlayWithEase.exceptions;
 
+import com.cloudinary.api.exceptions.NotFound;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -31,4 +32,5 @@ public class GlobalExceptionHandler {
     public String handleConstraintViolation(ConstraintViolationException ex){
         return "Invalid Phone Number";
     }
+
 }

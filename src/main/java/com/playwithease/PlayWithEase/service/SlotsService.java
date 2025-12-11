@@ -27,6 +27,9 @@ public class SlotsService {
     CourtsService courtsService;
 
     @Autowired
+    CourtStatsService statsService;
+
+    @Autowired
     UsersRepo usersRepo;
 
     @Autowired
@@ -52,12 +55,20 @@ public class SlotsService {
    public BookedSlots addSlot(Long courtId,BookedSlots slot){
        Court court = courtsService.getCourtById(courtId);
        String username = getCurrentUsername();
-       Users user = usersRepo.findByUsername(username);
-       if(court != null && user != null){
+       Users user = usersRepo.findByUsername(username)
+               .orElseThrow(() -> new RuntimeException("User not found adding his slot"));
+       if(court != null){
+
            slot.setCourt(court);
-           slot.setCourtName(court.getName());
+           slot.setCourtName(court.getCourtName());
            slot.setUsers(user);
-           slot.setTotalBookings(slot.getTotalBookings() + 1);
+           court.setTotalBookings(court.getTotalBookings() + 1L);
+           court.setMoneyEarned(court.getMoneyEarned() + slot.getAmount());
+           courtsRepo.save(court);
+
+           // update only DAILY stats
+           statsService.updateDailyStats(court, slot.getAmount());
+
            return bookedSlotsRepo.save(slot);
        }
        return new BookedSlots();
@@ -82,6 +93,10 @@ public class SlotsService {
 
     public List<BookedSlots> getUserBookedSlots(Long usersId) {
         return bookedSlotsRepo.findByUsersId(usersId);
+    }
+
+    public List<BookedSlots> getCourtBookedSlots(String courtName){
+        return bookedSlotsRepo.findByCourtName(courtName);
     }
 
 //    public BookedSlots getSlotsForDayAndDate(String day, Date date){

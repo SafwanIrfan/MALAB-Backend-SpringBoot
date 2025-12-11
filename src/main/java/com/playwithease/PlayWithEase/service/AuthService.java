@@ -1,11 +1,14 @@
 package com.playwithease.PlayWithEase.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.playwithease.PlayWithEase.dtos.UsersDTO;
+import com.playwithease.PlayWithEase.model.UserImageUrl;
 import com.playwithease.PlayWithEase.model.Users;
 import com.playwithease.PlayWithEase.model.EmailToken;
-import com.playwithease.PlayWithEase.repo.BookedSlotsRepo;
 import com.playwithease.PlayWithEase.repo.CourtsRepo;
 import com.playwithease.PlayWithEase.repo.EmailTokenRepo;
+import com.playwithease.PlayWithEase.repo.UserImageUrlsRepo;
 import com.playwithease.PlayWithEase.repo.UsersRepo;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +21,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
@@ -31,10 +36,10 @@ public class AuthService {
     private UsersRepo usersRepo;
 
     @Autowired
-    private CourtsRepo courtsRepo;
+    private UserImageUrlsRepo userImageUrlsRepo;
 
     @Autowired
-    private BookedSlotsRepo bookedSlotsRepo;
+    private CourtsRepo courtsRepo;
 
     @Autowired
     private EmailTokenRepo emailTokenRepo;
@@ -47,6 +52,9 @@ public class AuthService {
 
     @Autowired
     private JavaMailSender javaMailSender;
+
+    @Autowired
+    Cloudinary cloudinary;
 
     @Value("${spring.mail.username}") private String sender;
 
@@ -62,11 +70,11 @@ public class AuthService {
 
 
     public String resetPassword (String username, String newPassword){
-        Users users = usersRepo.findByUsername(username);
+        Users users = usersRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found for reseting password."));
         users.setPassword(encoder.encode(newPassword));
         users.setCanChangePassword(false);
         usersRepo.save(users);
-
         return ("Password Updated Successfully!");
     }
 
@@ -85,6 +93,7 @@ public class AuthService {
      try {
          users.setPassword(encoder.encode(users.getPassword()));
       usersRepo.save((users));
+
       sendEmail(users, "register");
      } catch (DataIntegrityViolationException e){
          throw e; //handled by GlobalExceptionHandler
@@ -93,13 +102,30 @@ public class AuthService {
      }
     }
 
+    public String addUserImage(String username, MultipartFile file) throws IOException {
+
+        Users user = usersRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found for adding image."));
+
+        Map uploadUserImage = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+        String userImageUrl = uploadUserImage.get("secure_url").toString();
+        UserImageUrl userUrl = new UserImageUrl(userImageUrl);
+        userUrl.setUser(user);
+        user.setUserImageUrl(userUrl);
+        usersRepo.save(user);
+
+        return "User image successfully saved.";
+
+
+    }
+
     public String sendEmail(Users users, String purpose){
         String token = UUID.randomUUID().toString();
         EmailToken emailToken = new EmailToken();
         emailToken.setToken(token);
         emailToken.setUsers(users);
         emailToken.setPurpose(purpose);
-        emailToken.setExpiryDate(LocalDateTime.now().plusHours(1));
+        emailToken.setExpiryDate(LocalDateTime.now().plusMinutes(1));
 
         emailTokenRepo.save(emailToken);
 
@@ -121,7 +147,6 @@ public class AuthService {
     public String verifyUser(Users users){
         Authentication authentication =
                 authManager.authenticate(new UsernamePasswordAuthenticationToken(users.getUsername(), users.getPassword()));
-        System.out.println(users.getUsername());
         if(authentication.isAuthenticated())
             return jwtService.generateToken(users.getUsername()) ;
 
@@ -129,7 +154,8 @@ public class AuthService {
     }
 
     public UsersDTO getUserByUsername(String username){
-         Users user = usersRepo.findByUsername(username);
+         Users user = usersRepo.findByUsername(username)
+                 .orElseThrow(() -> new RuntimeException("User not found for converting it into UsersDTO class."));
          return fromEntityToDTO(user);
     }
 
@@ -137,9 +163,11 @@ public class AuthService {
         if(user == null) return null;
         return new UsersDTO(
                 user.getId(),
+                user.getFullName(),
                 user.getUsername(),
                 user.getIsVerified(),
-                user.getCanChangePassword()
+                user.getCanChangePassword(),
+                user.getRole()
         );
     }
 
@@ -151,6 +179,9 @@ public class AuthService {
 
         if(verificationToken.getExpiryDate().isBefore(LocalDateTime.now())){
             emailTokenRepo.delete(verificationToken);
+            if(Objects.equals(verificationToken.getPurpose(), "register")) {
+                usersRepo.delete(verificationToken.getUsers());
+            }
             return "Oh! This link is expired.";
         }
 
