@@ -1,6 +1,7 @@
 package com.playwithease.PlayWithEase.dtos;
 
 import com.playwithease.PlayWithEase.model.Enums.RoleNames;
+import com.playwithease.PlayWithEase.model.UserImageUrl;
 
 public class UsersDTO {
     private Long id;
@@ -9,6 +10,7 @@ public class UsersDTO {
     private boolean isVerified;
     private boolean canChangePassword;
     private RoleNames role;
+    private UserImageUrl userImageUrl;
 
     public UsersDTO(
             Long id,
@@ -16,7 +18,8 @@ public class UsersDTO {
             String username,
             boolean isVerified,
             boolean canChangePassword,
-            RoleNames role
+            RoleNames role,
+            UserImageUrl userImageUrl
     )
     {
         this.username = username;
@@ -25,6 +28,7 @@ public class UsersDTO {
         this.isVerified = isVerified;
         this.canChangePassword = canChangePassword;
         this.role = role;
+        this.userImageUrl = userImageUrl;
     }
 
     public Long getId() {
@@ -71,5 +75,13 @@ public class UsersDTO {
 
     public void setRole(RoleNames role) {
         this.role = role;
+    }
+
+
+    public UserImageUrl getUserImageUrl() {
+        return userImageUrl;
+    }
+    public void setUserImageUrl(UserImageUrl userImageUrl) {
+        this.userImageUrl = userImageUrl;
     }
 }

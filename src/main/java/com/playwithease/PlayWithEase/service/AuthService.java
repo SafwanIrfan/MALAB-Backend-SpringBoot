@@ -155,8 +155,14 @@ public class AuthService {
 
     public UsersDTO getUserByUsername(String username){
          Users user = usersRepo.findByUsername(username)
-                 .orElseThrow(() -> new RuntimeException("User not found for converting it into UsersDTO class."));
+                 .orElseThrow(() -> new RuntimeException("User not found fetching with username."));
          return fromEntityToDTO(user);
+    }
+
+    public UsersDTO getUserById(Long id){
+        Users user = usersRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found fetching with userid."));
+        return fromEntityToDTO(user);
     }
 
     public UsersDTO fromEntityToDTO(Users user){
@@ -167,7 +173,8 @@ public class AuthService {
                 user.getUsername(),
                 user.getIsVerified(),
                 user.getCanChangePassword(),
-                user.getRole()
+                user.getRole(),
+                user.getUserImageUrl()
         );
     }
 

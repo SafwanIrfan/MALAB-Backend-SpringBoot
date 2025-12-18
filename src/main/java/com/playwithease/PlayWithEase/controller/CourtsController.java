@@ -172,8 +172,8 @@ public class CourtsController {
         return new ResponseEntity<>(slotsService.getUserBookedSlots(usersId),HttpStatus.OK);
     }
 
-    @GetMapping("/owner/court/bookings")
-    public ResponseEntity<List<BookedSlots>> getCourtBookedSlots(@RequestBody String courtName) {
+    @GetMapping("/owner/court/{courtName}/bookings")
+    public ResponseEntity<List<BookedSlots>> getCourtBookedSlots(@PathVariable String courtName) {
         return new ResponseEntity<>(slotsService.getCourtBookedSlots(courtName), HttpStatus.OK);
     }
 

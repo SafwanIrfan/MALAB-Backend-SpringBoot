@@ -77,6 +77,12 @@ public class AuthController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
+    @GetMapping("/userbyid/{id}")
+    public ResponseEntity<UsersDTO> getUserById (@PathVariable Long id) {
+        UsersDTO user = authService.getUserById(id);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
     @GetMapping("/api/verify/user")
     public ResponseEntity<String> verifyUserEmail(@RequestParam("token") String token){
         System.out.println(token);
