@@ -34,6 +34,11 @@ public class BookedSlots {
     private String bookedDay;
     private String status;
     private Long amount = 0L;
+    private Long advanceAmount = 0L;
+
+    @Column(nullable = false) // This tells the database Don't allow null here
+    private int durationMinutes = 0;
+    private Double pricePerHour;
 
     public Long getId() {
         return id;
@@ -133,6 +138,31 @@ public class BookedSlots {
     public void setAmount(Long amount) {
         this.amount = amount;
     }
+
+    public int getDurationMinutes() {
+        return durationMinutes;
+    }
+
+    public void setDurationMinutes(int durationMinutes) {
+        this.durationMinutes = durationMinutes;
+    }
+
+    public Long getAdvanceAmount() {
+        return advanceAmount;
+    }
+
+    public void setAdvanceAmount(Long advanceAmount) {
+        this.advanceAmount = advanceAmount;
+    }
+
+    public Double getPricePerHour() {
+        return pricePerHour;
+    }
+
+    public void setPricePerHour(Double pricePerHour) {
+        this.pricePerHour = pricePerHour;
+    }
+
 }
 
 

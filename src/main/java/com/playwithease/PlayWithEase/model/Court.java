@@ -21,9 +21,11 @@ public class Court {
     private String description;
     private String city;
     private String area;
-    private BigDecimal pricePerHour;
+    private Double pricePerHour;
     private Long totalBookings = 0L;
     private Double moneyEarned = 0.0;
+    private Double longitude;
+    private Double latitude;
 
     @Enumerated(EnumType.STRING) // saves actual value instead of index
     private CourtStatus courtStatus;
@@ -44,6 +46,7 @@ public class Court {
 
     @OneToMany(mappedBy = "court", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CourtsFav> courtsFavorites;
+
 
 
     public Long getId() {
@@ -91,12 +94,28 @@ public class Court {
         this.totalBookings = totalBookings;
     }
 
-    public BigDecimal getPricePerHour() {
+    public Double getPricePerHour() {
         return pricePerHour;
     }
 
-    public void setPricePerHour(BigDecimal pricePerHour) {
+    public void setPricePerHour(Double pricePerHour) {
         this.pricePerHour = pricePerHour;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
     }
 
     public List<BookedSlots> getBookedSlots() {

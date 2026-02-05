@@ -37,6 +37,12 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
+        // 🔑 Skip JWT validation for other operations endpoints
+        if (path.startsWith("/other/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
